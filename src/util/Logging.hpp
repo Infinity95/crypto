@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef CRYPTO_UTIL_LOGGING_H
-#define CRYPTO_UTIL_LOGGING_H
+#ifndef CRYPTO_UTIL_LOGGING_HPP
+#define CRYPTO_UTIL_LOGGING_HPP
 
 #include <util/Strings.hpp>
 
@@ -152,4 +152,4 @@ inline void initLogging()
 }
 }
 
-#endif // CRYPTO_UTIL_LOGGING_H
+#endif // CRYPTO_UTIL_LOGGING_HPP
