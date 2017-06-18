@@ -23,12 +23,12 @@ public:
     std::vector<char>::iterator decrypt(std::vector<char>& data, const std::vector<char>::iterator& block) noexcept override;
 
     size_t getBlockSize() noexcept override;
+
+    static uint8_t sBox(uint8_t A, uint8_t B, uint8_t i) noexcept;
+    static uint32_t roundFunction(uint32_t B, uint16_t k) noexcept;
 private:
 
     std::vector<char>::iterator applyEnc(std::vector<char>& data, const std::vector<char>::iterator& block) noexcept;
-
-    uint8_t sBox(uint8_t A, uint8_t B, uint8_t i) noexcept;
-    uint32_t roundFunction(uint32_t B, uint16_t k) noexcept;
 
     void copyInput(std::vector<char>::iterator leftByte, std::vector<char>::iterator rightByte) noexcept;
     void copyOutput(std::vector<char>::iterator leftByte, std::vector<char>::iterator rightByte) noexcept;

@@ -60,28 +60,28 @@ uint8_t FEAL::sBox(uint8_t A, uint8_t B, uint8_t x) noexcept
 uint32_t FEAL::roundFunction(uint32_t B, uint16_t k) noexcept
 {
     uint32_t result = 0;
-    uint8_t B0_7 = static_cast<uint8_t>(B >> 24);
-    uint8_t B8_15 = static_cast<uint8_t>(B >> 16);
-    uint8_t B16_23 = static_cast<uint8_t>(B >> 8);
-    uint8_t B24_31 = static_cast<uint8_t>(B);
-    uint8_t k0_7 = static_cast<uint8_t>(k >> 8);
-    uint8_t k8_15 = static_cast<uint8_t>(k);
+    uint8_t B0_7 = static_cast<uint8_t>(B);
+    uint8_t B8_15 = static_cast<uint8_t>(B >> 8);
+    uint8_t B16_23 = static_cast<uint8_t>(B >> 16);
+    uint8_t B24_31 = static_cast<uint8_t>(B >> 24);
+    uint8_t k0_7 = static_cast<uint8_t>(k);
+    uint8_t k8_15 = static_cast<uint8_t>(k >> 8);
 
-    uint8_t s01_input = B16_23 ^ k8_15;
+    uint8_t s01_input = B16_23 ^ B24_31 ^ k8_15;
 
     uint8_t F8_15 = sBox(B0_7 ^ B8_15 ^ k0_7, s01_input, 1);
     uint8_t F16_23 = sBox(F8_15, s01_input, 0);
 
-    result |= sBox(F8_15, B, 0);
-    result <<= 8;
-
-    result |= F8_15;
+    result |= sBox(F16_23, B24_31, 1);
     result <<= 8;
 
     result |= F16_23;
     result <<= 8;
 
-    result |= sBox(F16_23, B24_31, 0);
+    result |= F8_15;
+    result <<= 8;
+
+    result |= sBox(F8_15, B0_7, 0);
     return result;
 }
 

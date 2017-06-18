@@ -1,6 +1,16 @@
 
 #include "algorithms/FEAL.hpp"
 #include "util/Logging.hpp"
+#include "algorithms/FEALLinearCA.hpp"
+
+inline std::ostream& operator<<(std::ostream& o, const std::vector<char>& chars)
+{
+    for (auto c : chars)
+    {
+        o << std::hex << static_cast<unsigned int>(static_cast<unsigned char>(c));
+    }
+    return o;
+}
 
 int main()
 {
@@ -8,11 +18,12 @@ int main()
 
     CRYPTO_LOG_DEBUG(crypto::g_logger::get()) << "Program started";
 
-    crypto::algorithms::FEAL feal(0xABCDEFABCDEFABCD);
+    crypto::algorithms::FEAL feal(0x5F764E7BCE6A488E);
+    crypto::algorithms::FEALLinearCA linearCa;
 
     std::string myString;
 
-    while (true)
+    while (myString != "quit")
     {
         std::cout << "Enter string to encrypt: ";
         std::getline(std::cin, myString);
@@ -23,7 +34,7 @@ int main()
             auto spaceToFill = feal.getBlockSize() - myString.length() % feal.getBlockSize();
             for (auto i = 0; i < spaceToFill; ++i)
             {
-                myString += static_cast<char>(myString.length());
+                myString += '\0';
             }
         }
 
@@ -32,11 +43,16 @@ int main()
         auto encryptionPos = myData.begin();
         while (encryptionPos < myData.end() - feal.getBlockSize())
         {
+            auto encryptedPos = encryptionPos;
+            std::vector<char> plaintext{encryptionPos, encryptionPos + feal.getBlockSize()};
+
             encryptionPos = feal.encrypt(myData, encryptionPos);
+
+            std::vector<char> ciphertext{encryptedPos, encryptedPos + feal.getBlockSize()};
+            linearCa.addPlaintextCiphertextPair({plaintext, ciphertext});
         }
 
-        std::string myEncrypted(myData.begin(), myData.end());
-        std::cout << "Encrypted: " << myEncrypted << std::endl;
+        std::cout << "Encrypted: " << myData << std::endl;
 
         auto decryptionPos = myData.begin();
         while (decryptionPos < myData.end() - feal.getBlockSize())
@@ -46,6 +62,10 @@ int main()
 
         std::string myDecrypted(myData.begin(), myData.end());
         std::cout << "Decrypted: " << myDecrypted << std::endl;
+
+        auto key = linearCa.breakCipher();
+
+        std::cout << "Key: " << key << std::endl;
     }
 
     return 0;
