@@ -17,6 +17,7 @@ public:
 private:
     std::vector<PlaintextCiphertextPair> m_plaintextCiphertextPairs;
     std::vector<std::pair<uint64_t, uint64_t>> m_pcPairsU64;
+    std::unordered_set<uint16_t> m_k1Candidates;
     std::unordered_set<uint16_t> m_k4Candidates;
 public:
 
@@ -30,7 +31,9 @@ private:
 
     void add_pcPairU64(const PlaintextCiphertextPair& pair) noexcept;
 
-    void calculate_k4_candidates() noexcept;
+    void calculateCandidates(bool flipIO, std::unordered_set<uint16_t>& candidateSet) noexcept;
+
+    void calculate_k1_k4_candidates() noexcept;
 };
 }}
 

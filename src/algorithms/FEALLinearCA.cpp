@@ -11,7 +11,7 @@ void FEALLinearCA::addPlaintextCiphertextPair(const PlaintextCiphertextPair& pai
 
 uint64_t FEALLinearCA::breakCipher() noexcept 
 {
-    calculate_k4_candidates();
+    calculate_k1_k4_candidates();
 
     return 0;
 }
@@ -43,17 +43,17 @@ uint8_t bitAtu32(uint32_t value, size_t i)
     return (value >> i) & 1;
 }
 
-void FEALLinearCA::calculate_k4_candidates() noexcept 
+void FEALLinearCA::calculateCandidates(bool flipIO, std::unordered_set<uint16_t>& candidateSet) noexcept 
 {
-    // For each key k4 we need to calculate backwards one round
-    // for each pc pair.
-    
-    // Iterate over all k4
-    for (uint16_t k4 = 0; k4 < 0xFFFF; ++k4)
+    for (uint16_t key = 0; key < 0xFFFF; ++key)
     {
         auto candidate = true;
-        auto characteristicSet = false;
+        auto characteristic2Set = false;
+        auto characteristic3Set = false;
+        auto characteristic4Set = false;
         uint8_t characteristic2 = 0;
+        uint8_t characteristic3 = 0;
+        uint8_t characteristic4 = 0;
         // calculate backwards one round.
         for (auto pcPair : m_pcPairsU64)
         {
@@ -63,11 +63,17 @@ void FEALLinearCA::calculate_k4_candidates() noexcept
             auto left = static_cast<uint32_t>(pcPair.second >> 32);
             auto right = static_cast<uint32_t>(pcPair.second);
 
+            if (flipIO)
+            {
+                std::swap(leftPT, left);
+                std::swap(rightPT, right);
+            }
+
             right ^= left;
 
-            left ^= FEAL::roundFunction(right, k4);
+            left ^= FEAL::roundFunction(right, key);
 
-            // calculate and check characteristic
+            // calculate and check characteristics
             uint8_t characteristic =
                 bitAtu32(leftPT, 0) ^
                 bitAtu32(leftPT, 2) ^
@@ -83,7 +89,7 @@ void FEALLinearCA::calculate_k4_candidates() noexcept
                 break;
             }
 
-            uint8_t newCharacteristic =
+            uint8_t newCharacteristic2 =
                 bitAtu32(leftPT, 10) ^
                 bitAtu32(right, 10) ^
                 bitAtu32(leftPT, 0) ^
@@ -99,9 +105,9 @@ void FEALLinearCA::calculate_k4_candidates() noexcept
                 bitAtu32(left, 16) ^
                 bitAtu32(left, 24);
 
-            if (characteristicSet)
+            if (characteristic2Set)
             {
-                if (characteristic2 != newCharacteristic)
+                if (characteristic2 != newCharacteristic2)
                 {
                     candidate = false;
                     break;
@@ -109,16 +115,77 @@ void FEALLinearCA::calculate_k4_candidates() noexcept
             }
             else
             {
-                characteristicSet = true;
-                characteristic2 = newCharacteristic;
+                characteristic2Set = true;
+                characteristic2 = newCharacteristic2;
+            }
+
+            // is equal to k_0[8] ^ k_2[8] = const
+            uint8_t newCharacteristic3 =
+                bitAtu32(leftPT, 18) ^
+                bitAtu32(right, 18) ^
+                bitAtu32(left, 16) ^
+                bitAtu32(left, 24) ^
+                bitAtu32(leftPT, 8) ^
+                bitAtu32(right, 8) ^
+                bitAtu32(leftPT, 16) ^
+                bitAtu32(rightPT, 16) ^
+                bitAtu32(leftPT, 24) ^
+                bitAtu32(rightPT, 24);
+
+            if (characteristic3Set)
+            {
+                if (characteristic3 != newCharacteristic3)
+                {
+                    candidate = false;
+                    break;
+                }
+            }
+            else
+            {
+                characteristic3Set = true;
+                characteristic3 = newCharacteristic3;
+            }
+
+            uint8_t newCharacteristic4 =
+                bitAtu32(leftPT, 26) ^
+                bitAtu32(right, 26) ^
+                bitAtu32(left, 24) ^
+                bitAtu32(leftPT, 24) ^
+                bitAtu32(rightPT, 24) ^
+                bitAtu32(leftPT, 16) ^
+                bitAtu32(right, 16);
+
+            if (characteristic4Set)
+            {
+                if (characteristic4 != newCharacteristic4)
+                {
+                    candidate = false;
+                    break;
+                }
+            }
+            else
+            {
+                characteristic4Set = true;
+                characteristic4 = newCharacteristic4;
             }
         }
 
         if (candidate)
         {
-            CRYPTO_LOG_DEBUG(g_logger::get()) << "Found key candidate: " << std::hex << k4;
-            m_k4Candidates.insert(k4);
+            CRYPTO_LOG_DEBUG(g_logger::get()) << "Found key candidate: " << std::hex << key;
+            candidateSet.insert(key);
         }
     }
+}
+
+void FEALLinearCA::calculate_k1_k4_candidates() noexcept 
+{
+    m_k1Candidates.clear();
+    m_k4Candidates.clear();
+
+    CRYPTO_LOG_DEBUG(g_logger::get()) << "Calculating k1 candidates...";
+    calculateCandidates(true, m_k1Candidates);
+    CRYPTO_LOG_DEBUG(g_logger::get()) << "Calculating k4 candidates...";
+    calculateCandidates(false, m_k4Candidates);
 }
 }}

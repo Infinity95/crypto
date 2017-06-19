@@ -18,15 +18,15 @@ int main()
 
     CRYPTO_LOG_DEBUG(crypto::g_logger::get()) << "Program started";
 
-    crypto::algorithms::FEAL feal(0x5F764E7BCE6A488E);
+    crypto::algorithms::FEAL feal(0x6a1ac7b997c7bb64);
     crypto::algorithms::FEALLinearCA linearCa;
 
     std::string myString;
+    std::cout << "Enter string to encrypt: ";
+    std::getline(std::cin, myString);
 
-    while (myString != "quit")
+    while (myString != std::string("quit"))
     {
-        std::cout << "Enter string to encrypt: ";
-        std::getline(std::cin, myString);
         std::cout << std::endl;
         
         if (myString.length() % feal.getBlockSize() != 0 || myString.length() == 0)
@@ -66,6 +66,9 @@ int main()
         auto key = linearCa.breakCipher();
 
         std::cout << "Key: " << key << std::endl;
+
+        std::cout << "Enter string to encrypt: ";
+        std::getline(std::cin, myString);
     }
 
     return 0;

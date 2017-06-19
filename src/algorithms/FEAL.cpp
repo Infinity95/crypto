@@ -13,18 +13,18 @@ FEAL::FEAL(uint64_t key) noexcept :
 
 std::vector<char>::iterator FEAL::encrypt(std::vector<char>& data, const std::vector<char>::iterator& block) noexcept
 {
-    for (auto i = 0; i < m_blockSize; ++i)
+    for (auto i = 0; i < 4; ++i)
     {
-        m_keys[i] = static_cast<uint16_t>(m_key >> (24 - (i * 8)));
+        m_keys[i] = static_cast<uint16_t>(m_key >> (48 - (i * 16)));
     }
     return applyEnc(data, block);
 }
 
 std::vector<char>::iterator FEAL::decrypt(std::vector<char>& data, const std::vector<char>::iterator& block) noexcept
 {
-    for (auto i = 0; i < m_blockSize; ++i)
+    for (auto i = 0; i < 4; ++i)
     {
-        m_keys[i] = static_cast<uint16_t>(m_key >> (i * 8));
+        m_keys[i] = static_cast<uint16_t>(m_key >> (i * 16));
     }
     return applyEnc(data, block);
 }
