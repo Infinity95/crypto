@@ -26,7 +26,9 @@ public:
     /**
      * Finds the key that the plaintext ciphertext pairs were encrypted with.
      */
-    uint64_t breakCipher() noexcept;
+    uint64_t breakCipher();
+
+    void reset() noexcept;
 private:
 
     void add_pcPairU64(const PlaintextCiphertextPair& pair) noexcept;
@@ -34,6 +36,10 @@ private:
     void calculateCandidates(bool flipIO, std::unordered_set<uint16_t>& candidateSet) noexcept;
 
     void calculate_k1_k4_candidates() noexcept;
+
+    uint16_t bruteForceRound(uint32_t in, uint32_t out);
+
+    bool isCorrectKey(uint64_t key) noexcept;
 };
 }}
 

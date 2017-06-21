@@ -18,8 +18,7 @@ int main()
 
     CRYPTO_LOG_DEBUG(crypto::g_logger::get()) << "Program started";
 
-    crypto::algorithms::FEAL feal(0x6a1ac7b997c7bb64);
-    crypto::algorithms::FEALLinearCA linearCa;
+    crypto::algorithms::FEAL feal(0xc531e0ae7f460f11);
 
     std::string myString;
     std::cout << "Enter string to encrypt: ";
@@ -27,6 +26,8 @@ int main()
 
     while (myString != std::string("quit"))
     {
+        crypto::algorithms::FEALLinearCA linearCa;
+
         std::cout << std::endl;
         
         if (myString.length() % feal.getBlockSize() != 0 || myString.length() == 0)

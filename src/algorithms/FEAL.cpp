@@ -36,7 +36,7 @@ size_t FEAL::getBlockSize() noexcept
 
 std::vector<char>::iterator FEAL::applyEnc(std::vector<char>& data, const std::vector<char>::iterator& block) noexcept
 {
-    assert(block + m_blockSize < data.end());
+    assert(block + m_blockSize <= data.end());
 
     copyInput(block, block + 4);
 
